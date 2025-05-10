@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Anonymous Chaos Chat</title>
+  <style>
+    body { font-family: Arial; max-width: 600px; margin: 0 auto; padding: 20px; }
+    #chat { border: 1px solid #ccc; height: 400px; overflow-y: scroll; padding: 10px; }
+    #name, #message { width: 100%; padding: 10px; margin: 5px 0; }
+    button { padding: 10px; background: #ff5722; color: white; border: none; cursor: pointer; }
+    img { max-width: 200px; max-height: 200px; }
+  </style>
+</head>
+<body>
+  <h1>🌍 Anonymous Chaos Chat</h1>
+  <p><i>Anyone can post! No rules! Spam allowed!</i></p>
+  <div id="chat"></div>
+  <input type="text" id="name" placeholder="Your name (or anonymous)" />
+  <textarea id="message" placeholder="Your message"></textarea>
+  <button onclick="sendMessage()">Send</button>
+  <button onclick="uploadImage()">Upload Image</button>
+  <input type="file" id="imageInput" accept="image/*" style="display: none;" />
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-storage-compat.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
