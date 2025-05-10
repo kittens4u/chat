@@ -1,74 +1,41 @@
-// Firebase Config (replace with yours!)
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_BUCKET.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdef123456"
-};
+// ... (keep existing Firebase config code)
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const storage = firebase.storage();
-
-// DOM Elements
-const chatDiv = document.getElementById("chat");
-const nameInput = document.getElementById("name");
-const messageInput = document.getElementById("message");
-const imageInput = document.getElementById("imageInput");
-
-// Listen for new messages (real-time!)
+// Listen for new messages
 db.collection("messages")
   .orderBy("timestamp", "desc")
   .limit(50)
   .onSnapshot((snapshot) => {
-    chatDiv.innerHTML = "";
+    const messages = [];
     snapshot.forEach((doc) => {
-      const msg = doc.data();
-      const msgElement = document.createElement("div");
-      msgElement.innerHTML = `
-        <strong>${msg.name || "Anonymous"}:</strong>
-        ${msg.image ? `<img src="${msg.image}" />` : msg.text}
-        <small>${msg.timestamp?.toDate().toLocaleTimeString()}</small>
-        <hr>
-      `;
-      chatDiv.appendChild(msgElement);
+      messages.push(doc.data());
     });
+    
+    // Save to localStorage
+    localStorage.setItem("cachedMessages", JSON.stringify(messages));
+    
+    // Display messages
+    updateChatUI(messages);
   });
 
-// Send a text message
-function sendMessage() {
-  const name = nameInput.value || "Anonymous";
-  const text = messageInput.value;
-  if (!text.trim()) return;
+// Display messages from cache on page load
+window.addEventListener("load", () => {
+  const cachedMessages = localStorage.getItem("cachedMessages");
+  if (cachedMessages) {
+    updateChatUI(JSON.parse(cachedMessages));
+  }
+});
 
-  db.collection("messages").add({
-    name,
-    text,
-    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+// Helper function to render messages
+function updateChatUI(messages) {
+  chatDiv.innerHTML = "";
+  messages.forEach((msg) => {
+    const msgElement = document.createElement("div");
+    msgElement.innerHTML = `
+      <strong>${msg.name || "Anonymous"}:</strong>
+      ${msg.image ? `<img src="${msg.image}" />` : msg.text}
+      <small>${msg.timestamp?.toDate().toLocaleTimeString()}</small>
+      <hr>
+    `;
+    chatDiv.appendChild(msgElement);
   });
-
-  messageInput.value = "";
-}
-
-// Upload an image
-function uploadImage() {
-  imageInput.click();
-  imageInput.onchange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const name = nameInput.value || "Anonymous";
-    const storageRef = storage.ref(`images/${file.name + Date.now()}`);
-    await storageRef.put(file);
-    const imageUrl = await storageRef.getDownloadURL();
-
-    db.collection("messages").add({
-      name,
-      image: imageUrl,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    });
-  };
 }
